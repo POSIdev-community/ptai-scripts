@@ -1,16 +1,11 @@
-# PT AI authentication via AccessToken
-
 import requests
 
-BASE_URL = "https://ai-server.example.com/"
-# You can obtain the token via Settings in the WEB UI
-ACCESS_TOKEN = "IZdrBx4LRcTiy0mWJvLK0XS/MEVDDSd8"
-
+from consts import ACCESS_TOKEN, BASE_URL
 
 requests_session = requests.Session()
 
 
-def auth() -> None:
+def do_auth() -> None:
     access_token = get_bearer_token()
 
     # do not forget to add 'Bearer ' before a token!
@@ -35,27 +30,12 @@ def get_bearer_token() -> str:
     return access_token
 
 
-def get_all_projects() -> list[dict[str, any]]:
-    res = requests_session.get(BASE_URL + "api/projects")
-    json = res.json()
-
-    return json
-
-
 def main():
     # disable SSL check
     requests_session.verify = False
 
     # set the obtained token to the header 'Authorization' for the session
-    auth()
-
-    # let's do something with the token!
-    projects = get_all_projects()
-    for project in projects:
-        print("id = %s" % project["id"])
-        print("name = %s" % project["name"])
-        print("creationDate = %s" % project["creationDate"])
-        print("settingsId = %s" % project["settingsId"])
+    do_auth()
 
 
 if __name__ == "__main__":
