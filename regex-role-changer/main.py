@@ -158,6 +158,7 @@ for username, projects in user_modified_projects.items():
 print("Изменить? [y/N]")
 
 if input().lower() not in ['y', 'yes', 'д', 'да']:
+    print("Отмена операции, изменения не будут применены")
     sys.exit(0)
 
 # Изменение проектных ролей
@@ -165,21 +166,25 @@ for username, projects in user_modified_projects.items():
     user_object = first((user for user in users if user['name'] == username), {})
     user_object['projectMemberInfos'] = user_modified_projects[username]
     req = auth.requests_session.put(URL + "api/auth/membership", json=user_object)
-    # TODO: сделать отлов остальных ошибок
-    if req.status_code != 200:
+    if not req.ok:
         print(f"ERR: Ошибка при изменении проектов пользователя {username}. Сервер вернул код {req.status_code}")
+        print(f"Ответ от сервера: {req.json()}")
 
 # Создание новых проектных ролей
 for username, project_list in new_roles.items():
     for project in project_list:
         req = auth.requests_session.post(URL + "api/auth/membership/project/" + project['projectId'], json=[project], headers={
             "Content-Type": "application/json-patch+json"
-        })
-        # TODO: сделать отлов остальных ошибок
-        if req.status_code == 400 and req.json()['errorCode'] == 'CANNOT_ASSIGN_PROJECT_ROLE_TO_ADMINISTRATOR':
-            print(f"WARN: Невозможно назначить роль пользователю {username}, т.к. он администратор")
+        })            
+        if req.ok:
             continue
-        if req.status_code != 200:
-            print(f"ERR: Ошибка при создании проекта {project['projectId']} для пользователя {username}. Сервер вернул код {req.status_code}")
+
+        try:
+            if req.json()['errorCode'] == 'CANNOT_ASSIGN_PROJECT_ROLE_TO_ADMINISTRATOR':
+                print(f"WARN: Невозможно назначить роль пользователю {username}, т.к. он администратор")
+            else:
+                print(f"ERR: Ошибка при назначении на проект {project['projectId']} пользователя {username}. Информация от сервера: {req.json()}")
+        except KeyError:
+            print(f"ERR: Ошибка при назначении на проект {project['projectId']} пользователя {username}. Информация от сервера: {req.json()}")
 
 print("Загрузка завершена успешно!")
