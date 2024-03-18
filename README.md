@@ -5,6 +5,7 @@
 
 1. [Пример работы с API](python-examples/auth.py) на Python
 2. [Управление проектными ролями](regex-role-changer) с помощью регулярных выражений
+3. [Увеличение лимитов RAM](server-memory-limit-changer) у контейнеров на сервере PT AI
 
 ## Получение токена
 
